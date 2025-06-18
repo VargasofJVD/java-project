@@ -6,15 +6,18 @@ public class Customer {
     private String username;
     private String email;
     private String phoneNumber;
+    private String location;
+    private String joinDate;
     private String password;
 
-    public Customer(String fullName, String username, String email, String phoneNumber, String password) {
+    public Customer(String fullName, String username, String email, String phoneNumber, String location) {
         this.id = java.util.UUID.randomUUID().toString();
         this.fullName = fullName;
         this.username = username;
         this.email = email;
         this.phoneNumber = phoneNumber;
-        this.password = password;
+        this.location = location;
+        this.joinDate = java.time.LocalDate.now().toString();
     }
 
     // Getters and Setters
@@ -52,6 +55,22 @@ public class Customer {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public String getJoinDate() {
+        return joinDate;
+    }
+
+    public void setJoinDate(String joinDate) {
+        this.joinDate = joinDate;
     }
 
     public String getPassword() {
