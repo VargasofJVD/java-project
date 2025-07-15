@@ -34,6 +34,9 @@ import javafx.util.Duration;
 import javafx.scene.shape.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class Main extends Application {
 
@@ -53,6 +56,8 @@ public class Main extends Application {
     private List<CartItem> cartItems = new ArrayList<>();
     private Label cartBadge;
     private Customer currentCustomer;
+
+    private static Connection dbConnection;
 
     private static class CartItem {
         private String name;
@@ -100,6 +105,63 @@ public class Main extends Application {
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
         this.productsList = FXCollections.observableArrayList();
+
+        // Initialize H2 database connection
+        try {
+            dbConnection = DriverManager.getConnection("jdbc:h2:~/farmers_customers_db;MODE=MySQL", "sa", "");
+            System.out.println("H2 database connected successfully.");
+
+            // Create tables if they do not exist
+            String createFarmerTable = "CREATE TABLE IF NOT EXISTS Farmer (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "name VARCHAR(255), " +
+                    "username VARCHAR(255), " +
+                    "email VARCHAR(255), " +
+                    "phone VARCHAR(50), " +
+                    "farmName VARCHAR(255), " +
+                    "farmLocation VARCHAR(255), " +
+                    "password VARCHAR(255)" +
+                    ")";
+            String createCustomerTable = "CREATE TABLE IF NOT EXISTS Customer (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "name VARCHAR(255), " +
+                    "username VARCHAR(255), " +
+                    "email VARCHAR(255), " +
+                    "phone VARCHAR(50), " +
+                    "address VARCHAR(255), " +
+                    "password VARCHAR(255)" +
+                    ")";
+            String createProductTable = "CREATE TABLE IF NOT EXISTS Product (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "name VARCHAR(255), " +
+                    "price DOUBLE, " +
+                    "description VARCHAR(1024), " +
+                    "unit VARCHAR(50), " +
+                    "quantity INT, " +
+                    "farmerId BIGINT, " +
+                    "imagePath VARCHAR(255), " +
+                    "FOREIGN KEY (farmerId) REFERENCES Farmer(id)" +
+                    ")";
+            String createOrderTable = "CREATE TABLE IF NOT EXISTS Orders (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "customerId BIGINT, " +
+                    "productId BIGINT, " +
+                    "quantity INT, " +
+                    "orderDate TIMESTAMP, " +
+                    "status VARCHAR(50), " +
+                    "FOREIGN KEY (customerId) REFERENCES Customer(id), " +
+                    "FOREIGN KEY (productId) REFERENCES Product(id)" +
+                    ")";
+
+            dbConnection.createStatement().execute(createFarmerTable);
+            dbConnection.createStatement().execute(createCustomerTable);
+            dbConnection.createStatement().execute(createProductTable);
+            dbConnection.createStatement().execute(createOrderTable);
+            System.out.println("Tables created or already exist.");
+        } catch (SQLException e) {
+            System.err.println("Failed to connect to H2 database or create tables: " + e.getMessage());
+            return;
+        }
 
         // Create demo farmer
         this.demoFarmer = new Farmer(
